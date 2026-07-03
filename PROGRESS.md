@@ -1,8 +1,12 @@
 # Rewind — Progress
 
 ## Current phase
-**Phase 1 (cognee loop proof): code complete, smoke test NOT yet run — blocked on API keys.**
-Run `backend/.venv/bin/python backend/smoke.py` once keys are in `backend/.env` (see `.env.example`), then verify output and gate.
+**Phase 1 (cognee loop proof): PASSED 2026-07-03. Next: Phase 2 (frontend core) — not started.**
+
+Smoke results (3 texts, Groq llama-3.3-70b + fastembed local embeddings):
+- Graph: 31 nodes / 62 edges. Types: Entity 10, EntityType 11, TextSummary/DocumentChunk/TextDocument 3 each, NodeSet 1. 19 nodes carried the batch tag via `belongs_to_set` edges → time-travel tagging works.
+- Ask: correct answer; `objects_result` is a list of edge objects with `node1`/`node2` `Node(uuid, attributes)` — **exact provenance works** (14 nodes, 21 edges resolved; no name-match fallback needed). `text_result` is a LIST of completion strings (main.py unwraps it).
+- Provenance includes TextSummary/DocumentChunk nodes alongside entities; frontend may want to style/filter chunk-type nodes differently.
 
 ## Confirmed cognee facts (v1.2.2, inspected from package source)
 - Python 3.11 venv at `backend/.venv`. Deps: cognee 1.2.2, fastapi, uvicorn, httpx.
@@ -21,10 +25,11 @@ Run `backend/.venv/bin/python backend/smoke.py` once keys are in `backend/.env` 
 2. Fallback (honest, marked in code): name-match graph node labels against retrieved context text, + 1-hop edges between matches.
 Actual shape of `objects_result` unverified until smoke test runs.
 
-## LLM config (decision: Groq, not OpenAI — user override 2026-07-03)
+## LLM config (decision: Groq + fastembed, no OpenAI anywhere)
 - `env_setup.py` maps `GROQ_API_KEY` → `LLM_PROVIDER=custom`, `LLM_MODEL=groq/llama-3.3-70b-versatile`, `LLM_ENDPOINT=https://api.groq.com/openai/v1`.
-- Embeddings stay OpenAI (`text-embedding-3-small`) — Groq has no embedding models. Requires real `OPENAI_API_KEY`.
-- Env loaded from `backend/.env` then repo-root `.env.local`. Current `.env.local` keys are placeholders/non-Groq — **need real GROQ_API_KEY + OPENAI_API_KEY**.
+- Embeddings: local fastembed (approved extra dep), `sentence-transformers/all-MiniLM-L6-v2`.
+- Real key lives in `backend/.env` (gitignored, human-managed). `.env.example` = placeholders only. Never write/print/commit real keys; pre-commit check for gsk_/sk-/ghp_/ck_ patterns.
+- Groq 429s: `ingest.cognify_with_backoff` — exponential backoff + halves `chunks_per_batch`; never switches providers.
 
 ## Batch/time-travel design
 - Each ingest batch = one NodeSet label; `backend/batches.json` sidecar keeps chronological order + timestamps + doc counts.
@@ -39,8 +44,9 @@ Actual shape of `objects_result` unverified until smoke test runs.
 - Frontend: untouched Next.js scaffold at repo root (NOT in frontend/ yet — decide in Phase 2 whether to move; AGENTS.md warns this Next.js has breaking changes, read node_modules/next/dist/docs first).
 
 ## Known issues / risks
-- Smoke test unrun: node/edge tuple shapes, `belongs_to_set` edge name, and objects_result shape are assumptions coded defensively — verify against smoke output.
-- Groq free-tier rate limits may throttle cognify on 40+ docs; ingest limit param exists.
+- Groq free-tier rate limits may throttle cognify on 40+ docs; backoff exists, ingest `limit` param exists.
+- Node labels for TextSummary/DocumentChunk fall back to truncated text — fine for inspector, noisy in graph; consider type-based styling in Phase 2.
+- Harmless "Unclosed client session" aiohttp warnings at process exit (cognee internal).
 
 ## Side quest (user request, separate from Rewind)
 - cognee-memory plugin v0.2.0 installed (topoteretes/cognee-integrations marketplace). Its hooks/skills activate next session.

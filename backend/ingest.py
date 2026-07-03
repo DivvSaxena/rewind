@@ -90,6 +90,28 @@ async def fetch_github_docs(repo: str, filter_: str | None, limit: int = 40) -> 
     return docs
 
 
+async def cognify_with_backoff(max_attempts: int = 4) -> None:
+    """cognify with retry on Groq 429s: exponential backoff + shrinking batch size.
+
+    Never switches providers; re-raises after max_attempts.
+    """
+    delay, chunks_per_batch = 30, None
+    for attempt in range(1, max_attempts + 1):
+        try:
+            kwargs = {"chunks_per_batch": chunks_per_batch} if chunks_per_batch else {}
+            await cognee.cognify(datasets=[DATASET], **kwargs)
+            return
+        except Exception as exc:
+            msg = str(exc).lower()
+            rate_limited = "429" in msg or "rate limit" in msg or "rate_limit" in msg
+            if not rate_limited or attempt == max_attempts:
+                raise
+            status["detail"] = f"Groq 429, retry {attempt}/{max_attempts - 1} in {delay}s"
+            await asyncio.sleep(delay)
+            delay *= 2
+            chunks_per_batch = max(1, (chunks_per_batch or 8) // 2)
+
+
 async def run_ingest(repo: str, filter_: str | None, batch_label: str, limit: int = 40) -> None:
     global status
     try:
@@ -100,7 +122,7 @@ async def run_ingest(repo: str, filter_: str | None, batch_label: str, limit: in
         # batches.json sidecar keeps chronological batch order + timestamps.
         await cognee.add(docs, dataset_name=DATASET, node_set=[batch_label])
         status = {"state": "cognifying", "batch_label": batch_label, "detail": "extracting graph (minutes)", "docs": len(docs)}
-        await cognee.cognify(datasets=[DATASET])
+        await cognify_with_backoff()
         save_batch(batch_label, len(docs))
         status = {"state": "done", "batch_label": batch_label, "detail": "complete", "docs": len(docs)}
     except Exception as exc:  # surfaced via /ingest/status
@@ -110,7 +132,7 @@ async def run_ingest(repo: str, filter_: str | None, batch_label: str, limit: in
 async def ingest_texts(texts: list[str], batch_label: str) -> None:
     """Direct text ingest (used by smoke test)."""
     await cognee.add(texts, dataset_name=DATASET, node_set=[batch_label])
-    await cognee.cognify(datasets=[DATASET])
+    await cognify_with_backoff()
     save_batch(batch_label, len(texts))
 
 

@@ -90,7 +90,11 @@ async def ask(req: AskRequest):
     if results:
         first = results[0] if isinstance(results, list) else results
         if isinstance(first, dict):
-            answer = str(first.get("text_result") or "")
+            raw_answer = first.get("text_result")
+            # text_result is a list of completion strings
+            if isinstance(raw_answer, list):
+                raw_answer = raw_answer[0] if raw_answer else ""
+            answer = str(raw_answer or "")
             context_result = first.get("context_result")
             objects_result = first.get("objects_result")
         else:
