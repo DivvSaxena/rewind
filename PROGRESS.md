@@ -1,7 +1,17 @@
 # Rewind — Progress
 
+> Deep context for handoff lives in `context/BACKEND.md`, `context/FRONTEND.md`, `context/RUNBOOK.md`. Any future session: read those three + this file + git log.
+
 ## Current phase
-**Phase 1 (cognee loop proof): PASSED 2026-07-03. Next: Phase 2 (frontend core) — not started.**
+**Phase 2 (frontend core): PASSED 2026-07-03 (browser-verified). Next: Phase 3 (real data) — not started.**
+
+Phase 2 delivered (all verified in headless Chromium + user's browser, zero console errors):
+- Repo reorg: Next.js app moved from root into `frontend/` (own .gitignore; root .gitignore slimmed).
+- `/` landing page (dark, gradient hero, feature cards, Plus Jakarta Sans) → CTA to `/debugger`.
+- `/debugger`: force-graph render from /graph (type-colored nodes), ask flow, **X-ray highlight** (retrieved subgraph glows, rest dims to 15%, animated), node inspector (type/batch/properties/source/connections), header with counts + status dot.
+- Bugs fixed en route: canvas defaulting to window size and swallowing sidebar clicks (ResizeObserver + explicit width/height in GraphView, `min-w-0` on main) — see context/FRONTEND.md.
+- ⚠️ Found a cross-process cognee DB visibility issue — see context/BACKEND.md. Investigate before Phase 3 ingest testing.
+- Root `.env.local` unused LLM/OPENAI key lines removed (frontend doesn't use them).
 
 Smoke results (3 texts, Groq llama-3.3-70b + fastembed local embeddings):
 - Graph: 31 nodes / 62 edges. Types: Entity 10, EntityType 11, TextSummary/DocumentChunk/TextDocument 3 each, NodeSet 1. 19 nodes carried the batch tag via `belongs_to_set` edges → time-travel tagging works.
