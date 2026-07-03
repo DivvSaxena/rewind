@@ -1,0 +1,4 @@
+.venv/
+.env
+batches.json
+__pycache__/
