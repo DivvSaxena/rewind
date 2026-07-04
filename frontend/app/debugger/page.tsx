@@ -1,12 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { askQuestion, getGraph } from "@/lib/api";
-import type { AskResponse, GraphNode, GraphSnapshot } from "@/lib/types";
+import { askQuestion, getBatches, getGraph } from "@/lib/api";
+import type { AskResponse, Batch, GraphNode, GraphSnapshot } from "@/lib/types";
 import Header from "@/components/Header";
 import GraphView from "@/components/GraphView";
 import AskPanel from "@/components/AskPanel";
 import NodeInspector from "@/components/NodeInspector";
+import Timeline from "@/components/Timeline";
 
 const EMPTY_GRAPH: GraphSnapshot = { nodes: [], links: [] };
 
@@ -21,6 +22,10 @@ export default function Home() {
 
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
+  const [batches, setBatches] = useState<Batch[]>([]);
+  // null = full memory; otherwise label of the last batch included in the view.
+  const [batchCutoff, setBatchCutoff] = useState<string | null>(null);
+
   const fetchGraph = useCallback(() => {
     getGraph()
       .then((data) => {
@@ -31,6 +36,9 @@ export default function Home() {
         setStatus("error");
         setLoadError(err instanceof Error ? err.message : "Failed to load graph.");
       });
+    getBatches()
+      .then((data) => setBatches(data.batches))
+      .catch(() => setBatches([]));
   }, []);
 
   const retryLoadGraph = useCallback(() => {
@@ -43,19 +51,49 @@ export default function Home() {
     fetchGraph();
   }, [fetchGraph]);
 
-  const handleAsk = useCallback(async (question: string) => {
-    setAsking(true);
-    setAskError(null);
+  const handleAsk = useCallback(
+    async (question: string) => {
+      setAsking(true);
+      setAskError(null);
+      setAskResult(null);
+      try {
+        const result = await askQuestion(question, batchCutoff ?? undefined);
+        setAskResult(result);
+      } catch (err) {
+        setAskError(err instanceof Error ? err.message : "Failed to get an answer.");
+      } finally {
+        setAsking(false);
+      }
+    },
+    [batchCutoff]
+  );
+
+  // Moving the timeline invalidates a previous answer's provenance highlight.
+  const handleCutoffChange = useCallback((cutoff: string | null) => {
+    setBatchCutoff(cutoff);
     setAskResult(null);
-    try {
-      const result = await askQuestion(question);
-      setAskResult(result);
-    } catch (err) {
-      setAskError(err instanceof Error ? err.message : "Failed to get an answer.");
-    } finally {
-      setAsking(false);
-    }
+    setAskError(null);
   }, []);
+
+  // Batches included at the current cutoff (chronological order from /batches).
+  const includedBatches = useMemo(() => {
+    if (batchCutoff === null) return null; // null = everything
+    const i = batches.findIndex((b) => b.label === batchCutoff);
+    return i === -1 ? null : new Set(batches.slice(0, i + 1).map((b) => b.label));
+  }, [batches, batchCutoff]);
+
+  // Nodes beyond the cutoff fade out. A node's batch is its NodeSet label; the
+  // NodeSet nodes themselves carry the label as their own label. Nodes with no
+  // batch (untagged) always stay visible.
+  const fadedNodeIds = useMemo(() => {
+    if (!includedBatches) return new Set<string>();
+    const faded = new Set<string>();
+    for (const n of graph.nodes) {
+      const batch = n.type === "NodeSet" ? n.label : n.batch;
+      if (batch && !includedBatches.has(batch)) faded.add(n.id);
+    }
+    return faded;
+  }, [graph.nodes, includedBatches]);
 
   const nodesById = useMemo(() => new Map(graph.nodes.map((n) => [n.id, n])), [graph.nodes]);
   const selectedNode = selectedNodeId ? nodesById.get(selectedNodeId) ?? null : null;
@@ -88,8 +126,26 @@ export default function Home() {
       <div className="flex flex-1 overflow-hidden">
         <main className="relative min-w-0 flex-1">
           {status === "connecting" && graph.nodes.length === 0 && (
-            <div className="absolute inset-0 flex items-center justify-center text-sm text-zinc-500">
-              Loading memory graph...
+            <div className="absolute inset-0 flex items-center justify-center">
+              <p className="animate-pulse text-sm text-zinc-500">Loading memory graph...</p>
+            </div>
+          )}
+          {status === "connected" && graph.nodes.length === 0 && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-8 text-center">
+              <p className="text-sm font-medium text-zinc-300">No memory yet</p>
+              <p className="max-w-md text-xs leading-relaxed text-zinc-500">
+                Ingest a GitHub repo to build the knowledge graph:{" "}
+                <code className="rounded bg-zinc-900 px-1.5 py-0.5 text-[11px] text-zinc-400">
+                  POST /ingest {"{"}repo, batch_label{"}"}
+                </code>{" "}
+                — then refresh. Cognify takes a few minutes per batch.
+              </p>
+              <button
+                onClick={retryLoadGraph}
+                className="mt-2 rounded-md border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 transition-colors hover:bg-zinc-800"
+              >
+                Refresh
+              </button>
             </div>
           )}
           {status === "error" && (
@@ -109,9 +165,17 @@ export default function Home() {
               links={graph.links}
               highlightNodeIds={highlightNodeIds}
               highlightActive={highlightActive}
+              fadedNodeIds={fadedNodeIds}
               selectedNodeId={selectedNodeId}
               onSelectNode={handleSelectNode}
             />
+          )}
+          {batches.length > 0 && (
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center p-4">
+              <div className="w-full max-w-xl">
+                <Timeline batches={batches} cutoff={batchCutoff} onChange={handleCutoffChange} />
+              </div>
+            </div>
           )}
         </main>
         <aside className="flex w-96 shrink-0 flex-col border-l border-zinc-800 bg-zinc-950">

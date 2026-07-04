@@ -1,4 +1,4 @@
-import type { AskResponse, GraphSnapshot } from "./types";
+import type { AskResponse, BatchesResponse, GraphSnapshot } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -15,6 +15,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export function getGraph(): Promise<GraphSnapshot> {
   return request<GraphSnapshot>("/graph");
+}
+
+export function getBatches(): Promise<BatchesResponse> {
+  return request<BatchesResponse>("/batches");
 }
 
 export function askQuestion(question: string, batchCutoff?: string): Promise<AskResponse> {

@@ -19,6 +19,7 @@ const DEFAULT_COLOR = "#94a3b8";
 const HIGHLIGHT_COLOR = "#38bdf8";
 const SELECTED_COLOR = "#f472b6";
 const DIM_OPACITY = 0.15;
+const FADE_OPACITY = 0.08; // timeline: nodes beyond the batch cutoff
 const ANIMATION_MS = 350;
 
 function colorForType(type: string): string {
@@ -54,6 +55,7 @@ interface Props {
   links: GraphLink[];
   highlightNodeIds: Set<string>;
   highlightActive: boolean;
+  fadedNodeIds: Set<string>;
   selectedNodeId: string | null;
   onSelectNode: (node: GraphNode | null) => void;
 }
@@ -63,12 +65,20 @@ export default function GraphView({
   links,
   highlightNodeIds,
   highlightActive,
+  fadedNodeIds,
   selectedNodeId,
   onSelectNode,
 }: Props) {
   const fgRef = useRef<ForceGraphMethods<NodeObject, LinkObject> | undefined>(undefined);
   const progressRef = useRef(0);
   const rafRef = useRef<number | null>(null);
+
+  // Timeline fade: animate each node between visible (1) and faded (FADE_OPACITY)
+  // whenever the cutoff set changes, easing from the previously committed set.
+  const fadeProgressRef = useRef(1);
+  const fadeFromRef = useRef<Set<string>>(new Set());
+  const fadeCommittedRef = useRef<Set<string>>(new Set());
+  const fadeRafRef = useRef<number | null>(null);
 
   // Without explicit width/height the canvas defaults to the window size,
   // overflowing the flex column and swallowing clicks meant for the sidebar.
@@ -125,6 +135,32 @@ export default function GraphView({
     };
   }, [highlightActive]);
 
+  useEffect(() => {
+    fadeFromRef.current = fadeCommittedRef.current;
+    fadeCommittedRef.current = fadedNodeIds;
+    fadeProgressRef.current = 0;
+    const startTime = performance.now();
+    if (fadeRafRef.current !== null) cancelAnimationFrame(fadeRafRef.current);
+
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - startTime) / ANIMATION_MS);
+      fadeProgressRef.current = t;
+      if (t < 1) {
+        fadeRafRef.current = requestAnimationFrame(tick);
+      }
+    };
+    fadeRafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (fadeRafRef.current !== null) cancelAnimationFrame(fadeRafRef.current);
+    };
+  }, [fadedNodeIds]);
+
+  const fadeOpacityFor = useCallback((id: string): number => {
+    const from = fadeFromRef.current.has(id) ? FADE_OPACITY : 1;
+    const to = fadeCommittedRef.current.has(id) ? FADE_OPACITY : 1;
+    return lerp(from, to, fadeProgressRef.current);
+  }, []);
+
   const nodeCanvasObject = useCallback(
     (node: NodeObject, ctx: CanvasRenderingContext2D, globalScale: number) => {
       const n = node as unknown as GraphNode & { x: number; y: number };
@@ -133,13 +169,14 @@ export default function GraphView({
       const isHighlighted = highlightNodeIds.has(n.id);
       const isSelected = n.id === selectedNodeId;
       const dimmed = highlightActive && !isHighlighted && !isSelected;
-      const opacity = dimmed ? lerp(1, DIM_OPACITY, progress) : 1;
+      const fadeOpacity = fadeOpacityFor(n.id);
+      const opacity = (dimmed ? lerp(1, DIM_OPACITY, progress) : 1) * fadeOpacity;
       const baseColor = colorForType(n.type);
       const radius = isSelected ? 6.5 : isHighlighted && highlightActive ? 5.5 : 4;
 
       if (isHighlighted && highlightActive) {
         ctx.shadowColor = HIGHLIGHT_COLOR;
-        ctx.shadowBlur = 14 * progress;
+        ctx.shadowBlur = 14 * progress * fadeOpacity;
       } else {
         ctx.shadowBlur = 0;
       }
@@ -163,20 +200,24 @@ export default function GraphView({
         ctx.fillText(n.label.slice(0, 24), n.x, n.y + radius + 8 / globalScale);
       }
     },
-    [highlightNodeIds, highlightActive, selectedNodeId]
+    [highlightNodeIds, highlightActive, selectedNodeId, fadeOpacityFor]
   );
 
   const linkColor = useCallback(
     (link: LinkObject) => {
       const key = linkKey(link);
       const progress = progressRef.current;
+      const fadeOpacity = Math.min(
+        fadeOpacityFor(endpointId(link.source)),
+        fadeOpacityFor(endpointId(link.target))
+      );
       if (highlightActive && highlightEdgeKeys.has(key)) {
-        return rgba(HIGHLIGHT_COLOR, lerp(0.35, 0.9, progress));
+        return rgba(HIGHLIGHT_COLOR, lerp(0.35, 0.9, progress) * fadeOpacity);
       }
-      const opacity = highlightActive ? lerp(0.35, DIM_OPACITY, progress) : 0.35;
+      const opacity = (highlightActive ? lerp(0.35, DIM_OPACITY, progress) : 0.35) * fadeOpacity;
       return rgba("#64748b", opacity);
     },
-    [highlightActive, highlightEdgeKeys]
+    [highlightActive, highlightEdgeKeys, fadeOpacityFor]
   );
 
   const linkWidth = useCallback(

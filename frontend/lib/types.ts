@@ -17,6 +17,16 @@ export interface GraphSnapshot {
   links: GraphLink[];
 }
 
+export interface Batch {
+  label: string;
+  timestamp: string;
+  doc_count: number;
+}
+
+export interface BatchesResponse {
+  batches: Batch[];
+}
+
 export interface ContextChunk {
   text: string;
   source: string;
