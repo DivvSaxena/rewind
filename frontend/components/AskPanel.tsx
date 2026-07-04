@@ -47,6 +47,18 @@ export default function AskPanel({ onAsk, asking, error, result }: Props) {
         </div>
       )}
 
+      {asking && (
+        <div className="flex animate-pulse flex-col gap-3">
+          <div className="rounded-md border border-zinc-800 bg-zinc-900/60 p-3">
+            <div className="mb-2 h-3 w-16 rounded bg-zinc-800" />
+            <div className="mb-1.5 h-3 w-full rounded bg-zinc-800/70" />
+            <div className="mb-1.5 h-3 w-5/6 rounded bg-zinc-800/70" />
+            <div className="h-3 w-2/3 rounded bg-zinc-800/70" />
+          </div>
+          <p className="text-xs text-zinc-600">Searching the memory graph...</p>
+        </div>
+      )}
+
       {result && (
         <div className="flex flex-col gap-3">
           <div className="rounded-md border border-zinc-800 bg-zinc-900/60 p-3">
@@ -54,6 +66,14 @@ export default function AskPanel({ onAsk, asking, error, result }: Props) {
               Answer
             </div>
             <p className="text-sm leading-relaxed text-zinc-100">{result.answer}</p>
+            {result.batch_cutoff && (
+              <p className="mt-2 border-t border-zinc-800 pt-2 text-[10px] text-amber-400/90">
+                Time travel: answered from memory as of{" "}
+                <span className="font-medium">{result.batch_cutoff}</span>
+                {result.scoped_to_batches &&
+                  ` (${result.scoped_to_batches.length} of your batches searched)`}
+              </p>
+            )}
           </div>
 
           <div>
