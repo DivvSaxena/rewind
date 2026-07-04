@@ -10,7 +10,7 @@ primary_region = 'sin'
   dockerfile = 'Dockerfile'
 
 [env]
-  CORS_ORIGINS = 'https://rewind-frontend.fly.dev,http://localhost:3000'
+  CORS_ORIGINS = 'https://rewind-frontend.fly.dev,https://rewind-pink.vercel.app,http://localhost:3000'
   LLM_MODEL = 'groq/llama-3.3-70b-versatile'
 
 [http_service]
