@@ -1,5 +1,6 @@
 """Rewind backend — FastAPI over cognee 1.2.2."""
 
+import os
 from typing import Optional
 
 import env_setup  # noqa: F401  (must run before cognee import)
@@ -7,17 +8,27 @@ import env_setup  # noqa: F401  (must run before cognee import)
 import cognee
 from cognee import SearchType
 from cognee.modules.engine.models.node_set import NodeSet
-from fastapi import BackgroundTasks, FastAPI
+from fastapi import BackgroundTasks, Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 import ingest
 from graph import extract_context_chunks, get_graph_snapshot, resolve_provenance
 
+
+def require_admin(x_admin_token: Optional[str] = Header(default=None)) -> None:
+    """Guard mutating endpoints when ADMIN_TOKEN is set (public deployments).
+
+    Locally (no ADMIN_TOKEN in env) everything stays open.
+    """
+    expected = os.getenv("ADMIN_TOKEN")
+    if expected and x_admin_token != expected:
+        raise HTTPException(status_code=403, detail="admin token required")
+
 app = FastAPI(title="Rewind")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=os.getenv("CORS_ORIGINS", "http://localhost:3000").split(","),
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -28,6 +39,7 @@ class IngestRequest(BaseModel):
     filter: Optional[str] = None
     batch_label: str
     limit: int = 40
+    offset: int = 0
 
 
 class AskRequest(BaseModel):
@@ -36,10 +48,14 @@ class AskRequest(BaseModel):
 
 
 @app.post("/ingest")
-async def start_ingest(req: IngestRequest, background: BackgroundTasks):
+async def start_ingest(
+    req: IngestRequest,
+    background: BackgroundTasks,
+    _: None = Depends(require_admin),
+):
     if ingest.status["state"] in {"fetching", "adding", "cognifying"}:
         return {"ok": False, "error": "ingest already running", "status": ingest.status}
-    background.add_task(ingest.run_ingest, req.repo, req.filter, req.batch_label, req.limit)
+    background.add_task(ingest.run_ingest, req.repo, req.filter, req.batch_label, req.limit, req.offset)
     return {"ok": True, "batch_label": req.batch_label}
 
 
@@ -59,7 +75,7 @@ async def batches():
 
 
 @app.post("/reset")
-async def reset():
+async def reset(_: None = Depends(require_admin)):
     await cognee.prune.prune_data()
     await cognee.prune.prune_system(metadata=True)
     ingest.BATCHES_FILE.unlink(missing_ok=True)

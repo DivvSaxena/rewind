@@ -37,13 +37,20 @@ def save_batch(label: str, doc_count: int) -> None:
     BATCHES_FILE.write_text(json.dumps(batches, indent=2))
 
 
-async def fetch_github_docs(repo: str, filter_: str | None, limit: int = 40) -> list[str]:
-    """Fetch issues + PRs (with discussion) as markdown docs, oldest first."""
+async def fetch_github_docs(
+    repo: str, filter_: str | None, limit: int = 40, offset: int = 0
+) -> list[str]:
+    """Fetch issues + PRs (with discussion) as markdown docs, oldest first.
+
+    offset skips the first N matching items (before any comment fetches), so
+    chronological batches don't re-ingest docs from earlier batches.
+    """
     headers = {"Accept": "application/vnd.github+json"}
     if os.getenv("GITHUB_TOKEN"):
         headers["Authorization"] = f"Bearer {os.environ['GITHUB_TOKEN']}"
 
     docs = []
+    skipped = 0
     async with httpx.AsyncClient(headers=headers, timeout=30) as client:
         page = 1
         while len(docs) < limit:
@@ -65,6 +72,9 @@ async def fetch_github_docs(repo: str, filter_: str | None, limit: int = 40) -> 
                 if len(docs) >= limit:
                     break
                 if filter_ and filter_.lower() not in (item["title"] + str(item.get("labels"))).lower():
+                    continue
+                if skipped < offset:
+                    skipped += 1
                     continue
                 kind = "PR" if "pull_request" in item else "Issue"
                 body = (item.get("body") or "")[:4000]
@@ -112,19 +122,27 @@ async def cognify_with_backoff(max_attempts: int = 4) -> None:
             chunks_per_batch = max(1, (chunks_per_batch or 8) // 2)
 
 
-async def run_ingest(repo: str, filter_: str | None, batch_label: str, limit: int = 40) -> None:
+async def run_ingest(
+    repo: str, filter_: str | None, batch_label: str, limit: int = 40, offset: int = 0
+) -> None:
     global status
     try:
-        status = {"state": "fetching", "batch_label": batch_label, "detail": f"fetching {repo}", "docs": 0}
-        docs = await fetch_github_docs(repo, filter_, limit)
-        status = {"state": "adding", "batch_label": batch_label, "detail": f"{len(docs)} docs", "docs": len(docs)}
-        # node_set tags every extracted node with the batch label (native batch tracking);
-        # batches.json sidecar keeps chronological batch order + timestamps.
-        await cognee.add(docs, dataset_name=DATASET, node_set=[batch_label])
-        status = {"state": "cognifying", "batch_label": batch_label, "detail": "extracting graph (minutes)", "docs": len(docs)}
+        # Empty repo = cognify-only retry: the docs were already add()ed by an
+        # earlier attempt, so skip the GitHub refetch and resume extraction.
+        if repo:
+            status = {"state": "fetching", "batch_label": batch_label, "detail": f"fetching {repo}", "docs": 0}
+            docs = await fetch_github_docs(repo, filter_, limit, offset)
+            status = {"state": "adding", "batch_label": batch_label, "detail": f"{len(docs)} docs", "docs": len(docs)}
+            # node_set tags every extracted node with the batch label (native batch tracking);
+            # batches.json sidecar keeps chronological batch order + timestamps.
+            await cognee.add(docs, dataset_name=DATASET, node_set=[batch_label])
+            doc_count = len(docs)
+        else:
+            doc_count = limit
+        status = {"state": "cognifying", "batch_label": batch_label, "detail": "extracting graph (minutes)", "docs": doc_count}
         await cognify_with_backoff()
-        save_batch(batch_label, len(docs))
-        status = {"state": "done", "batch_label": batch_label, "detail": "complete", "docs": len(docs)}
+        save_batch(batch_label, doc_count)
+        status = {"state": "done", "batch_label": batch_label, "detail": "complete", "docs": doc_count}
     except Exception as exc:  # surfaced via /ingest/status
         status = {"state": "error", "batch_label": batch_label, "detail": str(exc)[:500], "docs": 0}
 
