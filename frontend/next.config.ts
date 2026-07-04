@@ -10,3 +10,5 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
+// Deployed on Vercel (root directory: this folder) + Fly.io.
