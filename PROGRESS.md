@@ -3,61 +3,37 @@
 > Deep context for handoff lives in `context/BACKEND.md`, `context/FRONTEND.md`, `context/RUNBOOK.md`. Any future session: read those three + this file + git log.
 
 ## Current phase
-**Phase 2 (frontend core): PASSED 2026-07-03 (browser-verified). Next: Phase 3 (real data) — not started.**
+**ALL PHASES (1–5) COMPLETE 2026-07-04. Real-data verified. Next: Fly.io deploy (configs ready, fly authed).**
 
-Phase 2 delivered (all verified in headless Chromium + user's browser, zero console errors):
-- Repo reorg: Next.js app moved from root into `frontend/` (own .gitignore; root .gitignore slimmed).
-- `/` landing page (dark, gradient hero, feature cards, Plus Jakarta Sans) → CTA to `/debugger`.
-- `/debugger`: force-graph render from /graph (type-colored nodes), ask flow, **X-ray highlight** (retrieved subgraph glows, rest dims to 15%, animated), node inspector (type/batch/properties/source/connections), header with counts + status dot.
-- Bugs fixed en route: canvas defaulting to window size and swallowing sidebar clicks (ResizeObserver + explicit width/height in GraphView, `min-w-0` on main) — see context/FRONTEND.md.
-- ⚠️ Found a cross-process cognee DB visibility issue — see context/BACKEND.md. Investigate before Phase 3 ingest testing.
-- Root `.env.local` unused LLM/OPENAI key lines removed (frontend doesn't use them).
+## Final state (browser + API verified)
+- Graph: **292 nodes / 859 links** from **45 real topoteretes/cognee issues/PRs** in 3 chronological batches (`issues-1-15`, `issues-16-30`, `issues-31-45`).
+- Unscoped ask: "What database backends were discussed?" → PostgreSQL/Neo4j/pg/SQLAlchemy citing PRs #14/#31/#35; 20 provenance nodes / 17 edges → X-ray works on real data.
+- Scoped ask (batch_cutoff=issues-1-15): same question → **only PostgreSQL** (Neo4j is later knowledge) — time travel provably changes answers.
+- Timeline UI: slider + "Memory as of" badge + fade animation, 3 batches, zero console errors.
+- Batch 3 note: its cognify never fully completed (free-tier caps); docs are all add()ed and partially extracted, entry added to batches.json manually. Graph is frozen good-enough by user decision.
 
-Smoke results (3 texts, Groq llama-3.3-70b + fastembed local embeddings):
-- Graph: 31 nodes / 62 edges. Types: Entity 10, EntityType 11, TextSummary/DocumentChunk/TextDocument 3 each, NodeSet 1. 19 nodes carried the batch tag via `belongs_to_set` edges → time-travel tagging works.
-- Ask: correct answer; `objects_result` is a list of edge objects with `node1`/`node2` `Node(uuid, attributes)` — **exact provenance works** (14 nodes, 21 edges resolved; no name-match fallback needed). `text_result` is a LIST of completion strings (main.py unwraps it).
-- Provenance includes TextSummary/DocumentChunk nodes alongside entities; frontend may want to style/filter chunk-type nodes differently.
+## Phase 3 fixes (the hard-won knowledge)
+- **Cross-process DB visibility (SOLVED):** cognee 1.2.2 defaults to multi-user access control → per-dataset DBs via ContextVars; bare `get_graph_engine()` opens an empty global DB in a fresh process. Fix: `ENABLE_BACKEND_ACCESS_CONTROL=false` (env_setup.py). Data now survives restarts — verified.
+- **Session-memory bleed (SOLVED):** 1.2.2 enables session caching by default → /ask answered "as previously mentioned…" with 0 provenance. Fix: `CACHING=false` (env_setup.py).
+- **Groq free-tier survival:** 70B = 100K TPD (exhausted by batch 1); 8B-instant = separate 500K TPD + 6K TPM (also exhausted by day's end). Mitigations that are now permanent: cognee LLM rate limiter (`LLM_RATE_LIMIT_*`, 3400 tokens/min), cognify-with-backoff, `offset` param on /ingest for chronological batches, cognify-only retry mode (`repo:""` skips GitHub refetch — docs resume from dataset).
+- Ladybug holds a file lock via a spawned child process — kill strays (`pkill -f multiprocessing.spawn`) if "Lock is held by PID" appears.
 
-## Confirmed cognee facts (v1.2.2, inspected from package source)
-- Python 3.11 venv at `backend/.venv`. Deps: cognee 1.2.2, fastapi, uvicorn, httpx.
-- Default graph store: **ladybug** (embedded; `GRAPH_DATABASE_PROVIDER` env).
-- `cognee.add(data, dataset_name=, node_set=[...])` — **node_set tags nodes with batch labels natively** (NodeSet nodes + membership edges). This powers time travel.
-- `cognee.cognify(datasets=[...])` — LLM extraction. Structured output framework defaults to **instructor/litellm** (not BAML), so Groq works via `LLM_PROVIDER=custom`.
-- `cognee.search(query_text, query_type=SearchType.GRAPH_COMPLETION, datasets=, node_type=NodeSet, node_name=[labels], verbose=True)`:
-  - `verbose=True` → `[{text_result, context_result, objects_result}]` — answer + retrieved context + retrieved objects.
-  - `node_type`/`node_name` scope retrieval to specific NodeSets → **native time-scoped asking** (no honest-disable needed).
-  - **`SearchType.INSIGHTS` no longer exists in 1.2.2** (spec mentioned it; use objects_result instead).
-- Graph read: `cognee.infrastructure.databases.graph.get_graph_engine()` → `await engine.get_graph_data()` → (nodes, edges) tuples.
-- `cognee.prune.prune_data()` + `prune_system(metadata=True)` for /reset.
+## Ops / deploy (next step)
+- `fly` CLI installed + authed (saxenadivv@gmail.com). Configs ready: `backend/fly.toml` + Dockerfile (bakes deploy_data/ memory snapshot + fastembed model into image; `DATA_ROOT_DIRECTORY`/`SYSTEM_ROOT_DIRECTORY` env relocate cognee state), `frontend/fly.toml` + Dockerfile (Next standalone, `NEXT_PUBLIC_API_URL` build arg).
+- Deploy order: stop server → `backend/export_memory.sh` → fly launch backend (secrets: `GROQ_API_KEY`, `ADMIN_TOKEN`; env `CORS_ORIGINS`=frontend URL) → fly launch frontend → verify.
+- `/ingest` + `/reset` now 403 without `X-Admin-Token` when `ADMIN_TOKEN` is set; read/ask endpoints stay public for judges.
+- Demo-day Groq budget: quotas roll off continuously; by next day 70B has ~fresh 100K TPD — plenty for asks (~3-5K each). fly.toml pins 8B; consider 70B for answer quality.
 
-## Provenance strategy (/ask)
-1. Exact: extract node IDs from `objects_result` (retrieved triplets/edges) — `graph.py:resolve_provenance`.
-2. Fallback (honest, marked in code): name-match graph node labels against retrieved context text, + 1-hop edges between matches.
-Actual shape of `objects_result` unverified until smoke test runs.
+## Cognee facts (verified, still true)
+- `cognee.add(data, dataset_name=, node_set=[batch])` → NodeSet nodes + `belongs_to_set` edges = native batch tags.
+- `cognee.search(GRAPH_COMPLETION, node_type=NodeSet, node_name=[labels], verbose=True)` → `[{text_result(list), context_result, objects_result}]`; node_name scoping = native time-scoped asking.
+- Graph read: `get_graph_engine()` → `get_graph_data()`. SearchType.INSIGHTS does not exist in 1.2.2.
+- LLM: Groq via `LLM_PROVIDER=custom`; embeddings local fastembed. **No OpenAI anywhere.**
 
-## LLM config (decision: Groq + fastembed, no OpenAI anywhere)
-- `env_setup.py` maps `GROQ_API_KEY` → `LLM_PROVIDER=custom`, `LLM_MODEL=groq/llama-3.3-70b-versatile`, `LLM_ENDPOINT=https://api.groq.com/openai/v1`.
-- Embeddings: local fastembed (approved extra dep), `sentence-transformers/all-MiniLM-L6-v2`.
-- Real key lives in `backend/.env` (gitignored, human-managed). `.env.example` = placeholders only. Never write/print/commit real keys; pre-commit check for gsk_/sk-/ghp_/ck_ patterns.
-- Groq 429s: `ingest.cognify_with_backoff` — exponential backoff + halves `chunks_per_batch`; never switches providers.
+## Files (deltas this session)
+- backend: `env_setup.py` (access-control off, caching off, rate limiter), `ingest.py` (offset, cognify-only retries), `main.py` (offset, env CORS, admin-token guard), `requirements.txt`, Dockerfile/fly.toml/export_memory.sh/.dockerignore.
+- frontend: `components/Timeline.tsx` (new), `GraphView.tsx` (fade animation), `page.tsx` (cutoff state + faded set + Timeline), `AskPanel.tsx` (shimmer + time-travel note), `api.ts`/`types.ts` (batches), `next.config.ts` (standalone), Dockerfile/fly.toml/.dockerignore.
+- root: README.md (real one), LICENSE (MIT).
 
-## Batch/time-travel design
-- Each ingest batch = one NodeSet label; `backend/batches.json` sidecar keeps chronological order + timestamps + doc counts.
-- `/ask` with `batch_cutoff` scopes search to node_name=[all labels up to cutoff].
-
-## Files
-- `backend/main.py` — FastAPI: POST /ingest (background), GET /ingest/status, GET /graph, POST /ask, GET /batches, POST /reset. CORS localhost:3000.
-- `backend/ingest.py` — GitHub issues/PRs → markdown → add+cognify; module-level `status` dict.
-- `backend/graph.py` — graph snapshot normalization (defensive over tuple/object shapes), provenance resolution, chunk extraction.
-- `backend/smoke.py` — Phase 1 proof (prune → 3 texts → graph → ask → provenance).
-- `backend/env_setup.py` — env loading; import before cognee everywhere.
-- Frontend: untouched Next.js scaffold at repo root (NOT in frontend/ yet — decide in Phase 2 whether to move; AGENTS.md warns this Next.js has breaking changes, read node_modules/next/dist/docs first).
-
-## Known issues / risks
-- Groq free-tier rate limits may throttle cognify on 40+ docs; backoff exists, ingest `limit` param exists.
-- Node labels for TextSummary/DocumentChunk fall back to truncated text — fine for inspector, noisy in graph; consider type-based styling in Phase 2.
-- Harmless "Unclosed client session" aiohttp warnings at process exit (cognee internal).
-
-## Side quest (user request, separate from Rewind)
-- cognee-memory plugin v0.2.0 installed (topoteretes/cognee-integrations marketplace). Its hooks/skills activate next session.
-- Upload of user memory + skills to Cognee Cloud prepared in scratchpad (`upload_memory.py`, `memory_doc.md`) — blocked on `COGNEE_BASE_URL` (tenant URL) + `COGNEE_API_KEY` from platform.cognee.ai → API Keys.
+## Side quest (done 2026-07-04)
+Cognee Cloud: user memory + project docs + 3 SKILL.md files uploaded to `default_dataset`, recall verified. Creds in `backend/.env`. Plugin session-sync to cloud still unconfigured (needs env exports in shell profile).

@@ -13,11 +13,16 @@
 - Batch tags: `belongs_to_set` edges to NodeSet nodes → `batch` field on nodes in /graph.
 - SearchType.INSIGHTS does NOT exist in 1.2.2.
 
-## ⚠️ Known issue: cross-process DB visibility (hit 2026-07-03, unresolved)
-Data ingested by one process (smoke.py) was NOT visible to a separately-started uvicorn process — `/graph` returned 0 nodes ("No nodes found in the database"), and concurrent access hit a ladybug file lock (`Could not set lock ... held by PID`). Each fresh process also logs "User ... has registered", suggesting per-process default-user scoping.
-- Workaround used for verification: ingest + serve in the SAME process (scratchpad script, not committed).
-- Normal operation is fine: /ingest runs as a FastAPI background task inside the server process.
-- MUST INVESTIGATE for Phase 3: does data survive a uvicorn restart? If not, find how cognee resolves the default user/dataset across processes (ENABLE_BACKEND_ACCESS_CONTROL=false? DEFAULT_USER_EMAIL/PASSWORD envs in base_config.py?).
+## ✅ Cross-process DB visibility (SOLVED 2026-07-04)
+Root cause: cognee 1.2.2 defaults to multi-user access control → every dataset gets its OWN graph/vector DB, resolved via ContextVars set per add/cognify/search; a bare `get_graph_engine()` in a fresh process opens the empty global ladybug file. Fix: `ENABLE_BACKEND_ACCESS_CONTROL=false` in env_setup.py → single shared DB, survives restarts (verified).
+
+## Other hard-won env_setup flags (all in env_setup.py, do not remove)
+- `CACHING=false` — 1.2.2 session memory otherwise bleeds between /ask calls ("as previously mentioned…", 0 provenance).
+- `LLM_RATE_LIMIT_ENABLED/REQUESTS/INTERVAL/TOKENS` (4/60/3400) — self-throttle under Groq free-tier TPM; cognee estimates tokens vs Groq actuals, so keep headroom.
+- Groq quotas are per-model: 70B 100K TPD, 8B-instant 500K TPD + 6K TPM. `LLM_MODEL` env in .env can pin a model.
+- Ladybug lock: a killed server can leave a `multiprocessing.spawn` child holding the DB lock — `pkill -f multiprocessing.spawn`.
+- /ingest supports `offset` (skip N matching items → chronological batches) and cognify-only retries (`repo:""` → skip fetch/add, resume extraction of already-added docs).
+- `/ingest` + `/reset` require `X-Admin-Token` header when `ADMIN_TOKEN` env is set (public deploys); CORS origins from `CORS_ORIGINS` env.
 
 ## Secrets
 Real key only in `backend/.env` (gitignored, human-managed). Never write/print/commit keys. Pre-commit: grep staged files for `gsk_`/`sk-`/`ghp_`/`ck_`.

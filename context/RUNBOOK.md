@@ -24,9 +24,8 @@ cd backend && source .venv/bin/activate && python smoke.py
 - Landing page at / with Plus Jakarta Sans, CTA routes to /debugger.
 - Browser check: playwright-core + `npx playwright install chromium`, screenshots + console-error capture (scripts were in session scratchpad; trivial to rewrite).
 
-## Resume from here (next: Phase 3 per rewind-prompt-optimized.md)
-1. Read PROGRESS.md, context/BACKEND.md, context/FRONTEND.md.
-2. Resolve the cross-process DB visibility question first (blocks real ingest testing).
-3. Phase 3: ingest 40–80 Cognee GitHub issues/PRs in 2–3 chronological batches via POST /ingest; re-verify graph + ask on real data. Groq free tier rate limits: backoff exists in ingest.py; use the `limit` param.
-4. Phase 4: timeline slider (batch cutoff already plumbed end-to-end). Phase 5: polish + README.
-5. Phase gates: commit, update PROGRESS.md, 3-line summary, STOP for the user.
+## Resume from here (phases 1–5 done; next: Fly.io deploy)
+1. Read PROGRESS.md ("Ops / deploy" section has the exact order).
+2. Deploy: stop backend → `backend/export_memory.sh` → `cd backend && fly launch --copy-config --no-deploy` → `fly secrets set GROQ_API_KEY=... ADMIN_TOKEN=...` → `fly deploy` → same for frontend with `--build-arg NEXT_PUBLIC_API_URL=<backend url>` → set backend `CORS_ORIGINS` to frontend URL.
+3. Demo data is FROZEN (292 nodes / 859 links, 3 batches) — do NOT /reset or re-ingest before the demo; Groq daily quotas were exhausted 2026-07-04 and refill continuously.
+4. Verify a deployed ask: unscoped → PostgreSQL/Neo4j answer; batch_cutoff=issues-1-15 → PostgreSQL only.

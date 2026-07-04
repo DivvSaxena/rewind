@@ -3,3 +3,4 @@
 !.env.example
 batches.json
 __pycache__/
+deploy_data/

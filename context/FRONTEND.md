@@ -26,7 +26,11 @@ Read `node_modules/next/dist/docs/` before assuming Next.js APIs — this versio
 - `cd frontend && npm run dev` (port 3000), `npm run build`, `npm run lint`, `npx tsc --noEmit`.
 - `next.config.ts` pins `turbopack.root` to frontend/ (silences multi-lockfile warning).
 
-## Remaining for later phases
-- Timeline slider + batch filtering + "Memory as of: X" badge (Phase 4). `batch_cutoff` is already plumbed through `lib/api.ts askQuestion()` and the backend.
-- Ingest UI (trigger POST /ingest, poll GET /ingest/status, shimmer during cognify) — Phase 3/5.
-- Loading shimmer / empty states polish — Phase 5.
+## Phase 4/5 (done 2026-07-04)
+- `components/Timeline.tsx` — slider over /batches, "Memory as of: X" badge (emerald=latest, amber=time travel), per-batch tick buttons. Overlaid bottom-center of the graph (`pointer-events-none` wrapper, `pointer-events-auto` card).
+- GraphView fade: `fadedNodeIds` prop; per-node opacity animated between committed/previous sets via `fadeFromRef`/`fadeCommittedRef`/`fadeProgressRef` (same rAF pattern as X-ray). Fade multiplies with X-ray dim; links take min of endpoint fades.
+- page.tsx: `batchCutoff` state (null = full memory); faded set = nodes whose batch (or NodeSet label) is beyond cutoff; cutoff change clears askResult; cutoff passed to askQuestion.
+- AskPanel: skeleton shimmer while asking; amber time-travel note when result.batch_cutoff set.
+- Empty state ("No memory yet" + POST /ingest hint) and pulse loading state on the graph pane.
+- `next.config.ts`: `output: "standalone"` for the Fly Docker build (see frontend/Dockerfile — NEXT_PUBLIC_API_URL is a build arg).
+- playwright-core is a devDependency; verification script pattern lives in git history of scratchpad (launch chrome-headless-shell from ~/Library/Caches/ms-playwright).
