@@ -1,19 +1,23 @@
-# Fly.io config for the Rewind frontend.
-# Deploy: fly launch --copy-config --no-deploy && fly deploy --build-arg NEXT_PUBLIC_API_URL=https://<backend-app>.fly.dev
-app = "rewind-frontend"
-primary_region = "bom"
+# fly.toml app configuration file generated for rewind-frontend on 2026-07-05T00:41:18+05:30
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'rewind-frontend'
+primary_region = 'sin'
 
 [build]
-  dockerfile = "Dockerfile"
+  dockerfile = 'Dockerfile'
 
 [http_service]
   internal_port = 3000
   force_https = true
-  auto_stop_machines = "stop"
+  auto_stop_machines = 'stop'
   auto_start_machines = true
   min_machines_running = 0
 
 [[vm]]
-  memory = "512mb"
-  cpu_kind = "shared"
+  memory = '512mb'
+  cpu_kind = 'shared'
   cpus = 1
+  memory_mb = 512
