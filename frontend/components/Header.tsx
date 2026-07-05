@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 type Status = "connecting" | "connected" | "error";
 
 interface Props {
@@ -22,7 +24,9 @@ export default function Header({ status, nodeCount, linkCount, onReplayIntro }: 
     <header className="flex items-center justify-between border-b border-zinc-800 bg-zinc-950 px-5 py-3">
       <div className="flex items-baseline gap-3">
         <h1 className="text-sm font-semibold tracking-tight text-zinc-100">
-          Rewind <span className="font-normal text-zinc-500">- DevTools for AI memory</span>
+          <Link href="/" className="transition-colors hover:text-sky-400">
+            Rewind
+          </Link>
         </h1>
       </div>
       <div className="flex items-center gap-4 text-xs text-zinc-500">

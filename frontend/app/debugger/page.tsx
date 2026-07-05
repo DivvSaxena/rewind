@@ -25,6 +25,27 @@ export default function Home() {
 
   const [batches, setBatches] = useState<Batch[]>([]);
   const [introSignal, setIntroSignal] = useState(0);
+
+  // Resizable sidebar: drag the divider to grow the panel, capped at 45vw.
+  const [sidebarWidth, setSidebarWidth] = useState(448);
+  const startResize = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    const onMove = (ev: MouseEvent) => {
+      const width = window.innerWidth - ev.clientX;
+      const max = Math.round(window.innerWidth * 0.45);
+      setSidebarWidth(Math.min(Math.max(width, 320), max));
+    };
+    const onUp = () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+  }, []);
   // null = full memory; otherwise label of the last batch included in the view.
   const [batchCutoff, setBatchCutoff] = useState<string | null>(null);
 
@@ -205,7 +226,15 @@ export default function Home() {
             </div>
           )}
         </main>
-        <aside className="flex w-[28rem] shrink-0 flex-col border-l border-zinc-800 bg-zinc-950 2xl:w-[32rem]">
+        <div
+          onMouseDown={startResize}
+          title="Drag to resize the panel"
+          className="w-1.5 shrink-0 cursor-col-resize bg-zinc-800/60 transition-colors hover:bg-sky-500/70 active:bg-sky-500"
+        />
+        <aside
+          style={{ width: sidebarWidth }}
+          className="flex shrink-0 flex-col border-l border-zinc-800 bg-zinc-950"
+        >
           <div className="h-1/2 min-h-0 overflow-hidden border-b border-zinc-800">
             <AskPanel onAsk={handleAsk} asking={asking} error={askError} result={askResult} />
           </div>

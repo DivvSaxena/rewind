@@ -11,6 +11,16 @@ interface Props {
   result: AskResponse | null;
 }
 
+/** The backend asks the LLM to end with a line starting "Wisdom tip:". */
+function splitWisdom(answer: string): { body: string; tip: string | null } {
+  const match = answer.match(/wisdom tip:/i);
+  if (!match || match.index === undefined) return { body: answer, tip: null };
+  return {
+    body: answer.slice(0, match.index).trim(),
+    tip: answer.slice(match.index + match[0].length).trim() || null,
+  };
+}
+
 const SAMPLE_QUESTIONS = [
   "What database backends were discussed?",
   "Why was graph completion added?",
@@ -97,7 +107,19 @@ export default function AskPanel({ onAsk, asking, error, result }: Props) {
             <div className="mb-1 text-xs font-medium uppercase tracking-wide text-sky-400">
               Answer
             </div>
-            <p className="text-sm leading-relaxed text-zinc-100">{result.answer}</p>
+            <p className="text-sm leading-relaxed text-zinc-100">
+              {splitWisdom(result.answer).body}
+            </p>
+            {splitWisdom(result.answer).tip && (
+              <div className="mt-3 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2">
+                <div className="mb-0.5 text-[10px] font-semibold uppercase tracking-widest text-amber-400">
+                  💡 Wisdom tip
+                </div>
+                <p className="text-xs leading-relaxed text-amber-100/90">
+                  {splitWisdom(result.answer).tip}
+                </p>
+              </div>
+            )}
             {result.batch_cutoff && (
               <p className="mt-2 border-t border-zinc-800 pt-2 text-[10px] text-amber-400/90">
                 Time travel: answered from memory as of{" "}

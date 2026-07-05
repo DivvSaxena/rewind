@@ -151,8 +151,8 @@ export default function OnboardingModal({ openSignal = 0 }: OnboardingProps) {
   };
 
   return (
-    <div className={`absolute inset-0 z-30 flex items-center justify-center p-6 ${ui.overlayDark}`}>
-      <div className={`w-full max-w-lg p-6 ${ui.cardDark}`}>
+    <div className={`fixed inset-0 z-30 flex items-center justify-center p-6 ${ui.overlayDark}`}>
+      <div className={`pop-in w-full max-w-xl p-8 ${ui.cardDark}`}>
         {/* Progress */}
         <div className="mb-5 flex items-center justify-between">
           <span className="text-xs font-semibold uppercase tracking-widest text-sky-400">
@@ -175,14 +175,14 @@ export default function OnboardingModal({ openSignal = 0 }: OnboardingProps) {
         </div>
 
         {question && (
-          <>
-            <h2 className="text-lg font-semibold text-zinc-100">{question.prompt}</h2>
-            <div className="mt-5 flex flex-col gap-2.5">
+          <div key={step} className="panel-in">
+            <h2 className="text-xl font-semibold text-zinc-100">{question.prompt}</h2>
+            <div className="mt-6 flex flex-col gap-3">
               {question.options.map((option) => (
                 <button
                   key={option}
                   onClick={() => pick(option)}
-                  className="rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3 text-left text-sm text-zinc-200 transition-all hover:-translate-y-0.5 hover:border-sky-500/60 hover:bg-zinc-800/80"
+                  className="rounded-lg border border-zinc-800 bg-zinc-900/60 px-5 py-3.5 text-left text-sm text-zinc-200 transition-all duration-200 hover:-translate-y-0.5 hover:border-sky-500/60 hover:bg-zinc-800/80 hover:shadow-lg hover:shadow-sky-500/10"
                 >
                   {option}
                 </button>
@@ -191,16 +191,16 @@ export default function OnboardingModal({ openSignal = 0 }: OnboardingProps) {
             {step > 0 && (
               <button
                 onClick={() => setStep((s) => s - 1)}
-                className="mt-5 text-xs text-zinc-500 transition-colors hover:text-zinc-300"
+                className="mt-6 text-xs text-zinc-500 transition-colors hover:text-zinc-300"
               >
                 ← Back
               </button>
             )}
-          </>
+          </div>
         )}
 
         {onResults && (
-          <>
+          <div className="panel-in">
             <h2 className="text-lg font-semibold text-zinc-100">{play.title}</h2>
             <ol className="mt-4 flex flex-col gap-3">
               {play.steps.map((s, i) => (
@@ -235,7 +235,7 @@ export default function OnboardingModal({ openSignal = 0 }: OnboardingProps) {
             <button onClick={finish} className={`mt-6 w-full ${ui.buttonPrimary}`}>
               Start exploring →
             </button>
-          </>
+          </div>
         )}
       </div>
     </div>

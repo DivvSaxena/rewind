@@ -100,6 +100,15 @@ async def ask(req: AskRequest):
         node_type=NodeSet,
         node_name=node_names,
         verbose=True,
+        system_prompt=(
+            "Answer the question using ONLY the provided knowledge graph context. "
+            "Be specific and detailed: name the entities involved, mention the pull "
+            "requests or issues they came from when available, and explain how they "
+            "relate, in 2 to 4 sentences. If the context does not contain the answer, "
+            "say so plainly. Then, on a new line starting with exactly 'Wisdom tip:', "
+            "add one short practical insight a developer should take away from this "
+            "answer. Do not use em dashes anywhere."
+        ),
     )
 
     answer, context_result, objects_result = "", None, None
