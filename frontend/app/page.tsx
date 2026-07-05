@@ -120,15 +120,6 @@ export default function Landing() {
                 Open the debugger →
               </Link>
             </div>
-            <div className="mt-12 max-w-md">
-              <h2 className="text-sm font-semibold text-zinc-200">
-                Bring your own repo
-              </h2>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-                Rewind works with any GitHub repository. For this hackathon, the demo
-                memory is built from the Cognee repo&apos;s own issues and pull requests.
-              </p>
-            </div>
           </div>
         </div>
 
@@ -159,6 +150,14 @@ export default function Landing() {
             strokeLinecap="round"
           />
         </svg>
+
+        <div className="mb-14 text-center">
+          <h2 className={`text-2xl ${ui.headingLight}`}>Bring your own repo</h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-zinc-600">
+            Rewind works with any GitHub repository. For this hackathon, the demo memory
+            is built from the Cognee repo&apos;s own issues and pull requests.
+          </p>
+        </div>
 
         <div className="grid w-full grid-cols-1 gap-4 text-left sm:grid-cols-2">
           {FEATURES.map((f) => (

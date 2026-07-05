@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { AskResponse } from "@/lib/types";
 import { ui } from "@/lib/design";
+import LoadingQuips from "@/components/LoadingQuips";
 
 interface Props {
   onAsk: (question: string) => Promise<void>;
@@ -97,7 +98,7 @@ export default function AskPanel({ onAsk, asking, error, result }: Props) {
             <div className="mb-1.5 h-3 w-5/6 rounded bg-zinc-800/70" />
             <div className="h-3 w-2/3 rounded bg-zinc-800/70" />
           </div>
-          <p className="text-xs text-zinc-600">Searching the memory graph...</p>
+          <LoadingQuips />
         </div>
       )}
 

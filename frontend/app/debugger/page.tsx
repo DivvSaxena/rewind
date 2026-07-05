@@ -9,6 +9,7 @@ import AskPanel from "@/components/AskPanel";
 import NodeInspector from "@/components/NodeInspector";
 import Timeline from "@/components/Timeline";
 import OnboardingModal from "@/components/OnboardingModal";
+import LoadingQuips from "@/components/LoadingQuips";
 
 const EMPTY_GRAPH: GraphSnapshot = { nodes: [], links: [] };
 
@@ -155,7 +156,8 @@ export default function Home() {
         <main className="relative min-w-0 flex-1">
           {status === "connecting" && graph.nodes.length === 0 && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-8 text-center">
-              <p className="animate-pulse text-sm text-zinc-500">Loading memory graph...</p>
+              <p className="animate-pulse text-sm text-zinc-400">Loading memory graph...</p>
+              <LoadingQuips />
               <p className="max-w-sm text-xs leading-relaxed text-zinc-600">
                 If the backend was idle, waking it up can take ~30 seconds. Hang tight.
               </p>
