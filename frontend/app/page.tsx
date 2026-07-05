@@ -34,14 +34,28 @@ const FEATURES = [
 export default function Landing() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-zinc-950 text-zinc-100">
+      {/* Background video, dimmed so the content stays readable */}
+      <video
+        aria-hidden
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+        poster="/assets/rewind-bg-image.png"
+        className="pointer-events-none fixed inset-0 h-full w-full object-cover opacity-35"
+      >
+        <source src="/assets/rewind-bg-video.mp4" type="video/mp4" />
+      </video>
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 bg-gradient-to-b from-zinc-950/60 via-zinc-950/70 to-zinc-950/90"
+      />
+
       {/* Ambient glow */}
       <div
         aria-hidden
         className="pointer-events-none absolute -top-64 left-1/2 h-[36rem] w-[64rem] -translate-x-1/2 rounded-full bg-sky-500/10 blur-3xl"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,black,transparent)]"
       />
 
       <div className="relative mx-auto flex min-h-screen max-w-5xl flex-col px-6">
