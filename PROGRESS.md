@@ -7,6 +7,7 @@
 
 ## Post-deploy polish sprint (2026-07-05)
 - **Deploy fixes:** `tryrewind.vercel.app` domain added; must be in backend `CORS_ORIGINS` (fly.toml) or UI shows "Failed to fetch" - full checklist in `context/DOMAINS.md`.
+- **Analytics:** Google tag `G-4HV105TQHP` added globally in `frontend/app/layout.tsx` via `next/script`; privacy policy updated to disclose Google Analytics usage.
 - **Landing redesign:** background video in hero only (`public/assets/`), warm-white sections below (features, FAQ accordion, footer with By the Maker links), typewriter headline (remembers/learns/forgets), scroll-down hint, favicon set + logo, `/privacy` + `/terms` (real legal boilerplate, contact hello@divvsaxena.com only).
 - **Debugger UX:** onboarding flow (welcome + 3 explainer slides + name + 5 profiling questions + pain-based playbook; localStorage `rewind-onboarding-v2`/`-profile`; Replay demo button in header + "?" corner button), instruction chips top-left, sample-question chips in AskPanel, resizable sidebar (drag divider, max 45vw), panel/pop animations.
 - **Wisdom tips:** /ask now passes a custom `system_prompt` (detailed 2-4 sentence answers citing PRs + closing "Wisdom tip:" line); AskPanel splits the tip into an amber callout.

@@ -21,7 +21,8 @@ const SECTIONS: { heading: string; body: string[] }[] = [
   {
     heading: "3. Cookies and tracking",
     body: [
-      "Rewind sets no cookies and runs no advertising or third-party analytics trackers. The only browser storage used is localStorage for your onboarding preferences, as described above.",
+      "Rewind uses Google Analytics to measure traffic and site usage. Google may set cookies or collect device and browser data for analytics reporting. We do not use advertising features or build marketing profiles from this data.",
+      "The only first-party browser storage we use directly is localStorage for your onboarding preferences, as described above.",
     ],
   },
   {
