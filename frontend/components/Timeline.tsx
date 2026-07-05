@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import type { Batch } from "@/lib/types";
+import { ui } from "@/lib/design";
 
 interface Props {
   batches: Batch[];
@@ -32,7 +33,7 @@ export default function Timeline({ batches, cutoff, onChange }: Props) {
     .reduce((sum, b) => sum + b.doc_count, 0);
 
   return (
-    <div className="pointer-events-auto flex flex-col gap-2 rounded-xl border border-zinc-800 bg-zinc-950/85 px-4 py-3 backdrop-blur">
+    <div className={`pointer-events-auto flex flex-col gap-2 px-4 py-3 ${ui.panelDark}`}>
       <div className="flex items-center justify-between gap-3">
         <span
           className={`rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-colors ${

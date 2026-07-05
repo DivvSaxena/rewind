@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { ui } from "@/lib/design";
 
 const PRODUCT_LINKS = [
   { label: "Debugger", href: "/debugger" },
@@ -22,9 +23,7 @@ const MAKER_LINKS = [
 
 function ColumnHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="text-[11px] font-semibold uppercase tracking-widest text-stone-400">
-      {children}
-    </h3>
+    <h3 className={ui.footerHeading}>{children}</h3>
   );
 }
 
@@ -37,7 +36,7 @@ function FooterLink({
   href: string;
   external?: boolean;
 }) {
-  const className = "text-xs text-stone-500 transition-colors hover:text-zinc-900";
+  const className = ui.footerLink;
   return (
     <li>
       {external ? (

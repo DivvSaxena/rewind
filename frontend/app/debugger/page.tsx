@@ -174,6 +174,22 @@ export default function Home() {
               onSelectNode={handleSelectNode}
             />
           )}
+          {graph.nodes.length > 0 && (
+            <div className="pointer-events-none absolute left-4 top-4 z-10 flex flex-col gap-1.5 text-[11px] text-zinc-500">
+              <span className="rounded-md border border-zinc-800/80 bg-zinc-950/80 px-2 py-1 backdrop-blur">
+                <span className="text-zinc-300">Drag / scroll</span> to explore
+              </span>
+              <span className="rounded-md border border-zinc-800/80 bg-zinc-950/80 px-2 py-1 backdrop-blur">
+                <span className="text-zinc-300">Click a node</span> to inspect
+              </span>
+              <span className="rounded-md border border-zinc-800/80 bg-zinc-950/80 px-2 py-1 backdrop-blur">
+                <span className="text-zinc-300">Ask</span> to X-ray an answer
+              </span>
+              <span className="rounded-md border border-zinc-800/80 bg-zinc-950/80 px-2 py-1 backdrop-blur">
+                <span className="text-zinc-300">Slider</span> to rewind time
+              </span>
+            </div>
+          )}
           <OnboardingModal />
           {batches.length > 0 && (
             <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center p-4">

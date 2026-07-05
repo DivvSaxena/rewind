@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { AskResponse } from "@/lib/types";
+import { ui } from "@/lib/design";
 
 interface Props {
   onAsk: (question: string) => Promise<void>;
@@ -30,12 +31,12 @@ export default function AskPanel({ onAsk, asking, error, result }: Props) {
           }}
           placeholder="Ask the memory graph..."
           disabled={asking}
-          className="flex-1 rounded-md border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 outline-none focus:border-sky-500"
+          className={`flex-1 ${ui.inputDark}`}
         />
         <button
           onClick={submit}
           disabled={asking || !question.trim()}
-          className="rounded-md bg-sky-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-500"
+          className={ui.buttonPrimary}
         >
           {asking ? "Asking..." : "Ask"}
         </button>

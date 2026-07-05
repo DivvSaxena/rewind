@@ -4,26 +4,18 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ForceGraphMethods, NodeObject, LinkObject } from "react-force-graph-2d";
 import type { GraphLink, GraphNode } from "@/lib/types";
+import { fonts, graphColors, graphFx } from "@/lib/design";
 
 const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), { ssr: false });
 
-const TYPE_COLORS: Record<string, string> = {
-  Entity: "#60a5fa",
-  EntityType: "#a78bfa",
-  TextSummary: "#f59e0b",
-  DocumentChunk: "#fb923c",
-  TextDocument: "#f97316",
-  NodeSet: "#34d399",
-};
-const DEFAULT_COLOR = "#94a3b8";
-const HIGHLIGHT_COLOR = "#38bdf8";
-const SELECTED_COLOR = "#f472b6";
-const DIM_OPACITY = 0.15;
-const FADE_OPACITY = 0.08; // timeline: nodes beyond the batch cutoff
-const ANIMATION_MS = 350;
+const HIGHLIGHT_COLOR = graphColors.highlight;
+const SELECTED_COLOR = graphColors.selected;
+const DIM_OPACITY = graphFx.dimOpacity;
+const FADE_OPACITY = graphFx.fadeOpacity; // timeline: nodes beyond the batch cutoff
+const ANIMATION_MS = graphFx.animationMs;
 
 function colorForType(type: string): string {
-  return TYPE_COLORS[type] ?? DEFAULT_COLOR;
+  return graphColors.types[type] ?? graphColors.fallback;
 }
 
 function lerp(from: number, to: number, t: number): number {
@@ -194,7 +186,7 @@ export default function GraphView({
       }
 
       if (globalScale > 1.8) {
-        ctx.font = `${10 / globalScale}px "Plus Jakarta Sans", sans-serif`;
+        ctx.font = `${10 / globalScale}px ${fonts.sansCanvas}`;
         ctx.fillStyle = `rgba(230, 230, 235, ${opacity})`;
         ctx.textAlign = "center";
         ctx.fillText(n.label.slice(0, 24), n.x, n.y + radius + 8 / globalScale);
@@ -215,7 +207,7 @@ export default function GraphView({
         return rgba(HIGHLIGHT_COLOR, lerp(0.35, 0.9, progress) * fadeOpacity);
       }
       const opacity = (highlightActive ? lerp(0.35, DIM_OPACITY, progress) : 0.35) * fadeOpacity;
-      return rgba("#64748b", opacity);
+      return rgba(graphColors.link, opacity);
     },
     [highlightActive, highlightEdgeKeys, fadeOpacityFor]
   );
@@ -233,7 +225,7 @@ export default function GraphView({
         graphData={graphData}
         width={size.width}
         height={size.height}
-        backgroundColor="#0a0a0c"
+        backgroundColor={graphColors.background}
         nodeId="id"
         nodeCanvasObject={nodeCanvasObject}
         nodeLabel={(n) => (n as unknown as GraphNode).label}

@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import SiteFooter from "@/components/SiteFooter";
 import Typewriter from "@/components/Typewriter";
+import { ui } from "@/lib/design";
 
 const FEATURES = [
   {
@@ -91,10 +92,7 @@ export default function Landing() {
               />
               Rewind <span className="font-normal text-zinc-400">- DevTools for AI memory</span>
             </span>
-            <Link
-              href="/debugger"
-              className="rounded-md border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 transition-colors hover:border-zinc-500 hover:text-zinc-100"
-            >
+            <Link href="/debugger" className={ui.buttonGhostDark}>
               Open debugger
             </Link>
           </nav>
@@ -114,10 +112,7 @@ export default function Landing() {
               graph, X-ray every retrieval, and rewind memory to any point in time.
             </p>
             <div className="mt-10">
-              <Link
-                href="/debugger"
-                className="rounded-md bg-zinc-100 px-6 py-3 text-sm font-medium text-zinc-950 transition-colors hover:bg-white"
-              >
+              <Link href="/debugger" className={ui.buttonHero}>
                 Open the debugger →
               </Link>
             </div>
@@ -156,7 +151,7 @@ export default function Landing() {
           {FEATURES.map((f) => (
             <div
               key={f.title}
-              className="card-reveal group rounded-lg border border-stone-200 bg-white/70 p-5 transition-all duration-300 ease-out hover:-translate-y-1.5 hover:border-stone-300 hover:bg-white hover:shadow-xl hover:shadow-stone-900/5"
+              className={`card-reveal group p-5 ${ui.cardLight}`}
             >
               <div
                 className={`mb-3 inline-block text-lg ${f.accent} transition-transform duration-300 ease-out group-hover:-rotate-12 group-hover:scale-125`}
@@ -170,9 +165,7 @@ export default function Landing() {
         </div>
 
         <section className="mt-32 w-full text-left">
-          <p className="text-center text-xs font-semibold uppercase tracking-[0.25em] text-sky-600">
-            FAQ
-          </p>
+          <p className={`text-center ${ui.eyebrowLight}`}>FAQ</p>
           <h2 className="mt-3 text-center text-3xl font-semibold tracking-tight text-zinc-900">
             Questions worth asking
           </h2>
