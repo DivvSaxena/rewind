@@ -120,13 +120,14 @@ export default function Landing() {
                 Open the debugger →
               </Link>
             </div>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
-              <span className="rounded-full border border-zinc-700 bg-zinc-900/60 px-3 py-1 text-xs text-zinc-400">
-                Works with <span className="text-zinc-200">any GitHub repo</span>
-              </span>
-              <span className="rounded-full border border-zinc-700 bg-zinc-900/60 px-3 py-1 text-xs text-zinc-400">
-                Demo data: <span className="text-zinc-200">topoteretes/cognee</span>
-              </span>
+            <div className="mt-12 max-w-md">
+              <h2 className="text-sm font-semibold text-zinc-200">
+                Bring your own repo
+              </h2>
+              <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+                Rewind works with any GitHub repository. For this hackathon, the demo
+                memory is built from the Cognee repo&apos;s own issues and pull requests.
+              </p>
             </div>
           </div>
         </div>
