@@ -29,3 +29,4 @@ cd backend && source .venv/bin/activate && python smoke.py
 2. Deploy: stop backend → `backend/export_memory.sh` → `cd backend && fly launch --copy-config --no-deploy` → `fly secrets set GROQ_API_KEY=... ADMIN_TOKEN=...` → `fly deploy` → same for frontend with `--build-arg NEXT_PUBLIC_API_URL=<backend url>` → set backend `CORS_ORIGINS` to frontend URL.
 3. Demo data is FROZEN (292 nodes / 859 links, 3 batches) — do NOT /reset or re-ingest before the demo; Groq daily quotas were exhausted 2026-07-04 and refill continuously.
 4. Verify a deployed ask: unscoped → PostgreSQL/Neo4j answer; batch_cutoff=issues-1-15 → PostgreSQL only.
+5. Adding/changing a frontend domain (Vercel etc.): follow `context/DOMAINS.md` — the domain MUST be added to `CORS_ORIGINS` in `backend/fly.toml` + `fly deploy`, or the UI shows "Failed to fetch".
