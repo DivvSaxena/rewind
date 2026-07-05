@@ -28,7 +28,7 @@ const SLIDES: Slide[] = [
     glyph: "◉",
     accent: "text-sky-400",
     title: "See what your agent knows",
-    body: "The graph behind this window is real memory: entities and relationships Cognee extracted from actual data. Drag to pan, scroll to zoom, and click any node to inspect its properties and source document.",
+    body: "The graph behind this window is real memory: entities and relationships Cognee extracted from actual data. Rewind can ingest any GitHub repo; for this hackathon the demo memory is built from the Cognee repository's own issues and PRs. Drag to pan, scroll to zoom, and click any node to inspect it.",
     cta: "Next →",
   },
   {

@@ -45,6 +45,10 @@ const FAQS = [
     a: "The first 45 issues and pull requests of the Cognee repository, ingested through Cognee itself in three chronological batches: 292 nodes and 859 relationships extracted by an LLM.",
   },
   {
+    q: "Does it only work with the Cognee repo?",
+    a: "No. The ingestion pipeline is generic: point it at any GitHub repository and it turns the issues and pull requests into a memory graph. We focused this demo on the Cognee repo because the hackathon is judged by its maintainers. Broader repo support in the hosted version is on the roadmap if there is demand.",
+  },
+  {
     q: "How does the retrieval X-ray work?",
     a: "When you ask a question, Cognee returns the exact triplets it retrieved to answer it. Rewind extracts their node IDs and highlights precisely those nodes and edges in the graph, so the provenance is real, not approximated.",
   },
@@ -116,6 +120,10 @@ export default function Landing() {
                 Open the debugger →
               </Link>
             </div>
+            <p className="mt-6 text-xs text-zinc-400">
+              Works with any GitHub repo. This demo is built on the{" "}
+              <span className="text-zinc-200">Cognee</span> repository for the hackathon.
+            </p>
           </div>
         </div>
 
