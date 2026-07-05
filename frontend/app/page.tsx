@@ -120,10 +120,14 @@ export default function Landing() {
                 Open the debugger →
               </Link>
             </div>
-            <p className="mt-6 text-xs text-zinc-400">
-              Works with any GitHub repo. This demo is built on the{" "}
-              <span className="text-zinc-200">Cognee</span> repository for the hackathon.
-            </p>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+              <span className="rounded-full border border-zinc-700 bg-zinc-900/60 px-3 py-1 text-xs text-zinc-400">
+                Works with <span className="text-zinc-200">any GitHub repo</span>
+              </span>
+              <span className="rounded-full border border-zinc-700 bg-zinc-900/60 px-3 py-1 text-xs text-zinc-400">
+                Demo data: <span className="text-zinc-200">topoteretes/cognee</span>
+              </span>
+            </div>
           </div>
         </div>
 
