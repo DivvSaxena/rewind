@@ -77,6 +77,10 @@ curl -X POST localhost:8000/ingest -H 'Content-Type: application/json' \
 - **Retrieval replay:** step through a past `/ask`, re-running it against each batch cutoff to see when the answer would have changed.
 - **Live agent taps:** attach to a running Cognee-backed agent and stream new memories into the graph in real time.
 
+## Contributing
+
+Contributions are welcome, from roadmap features to docs and polish. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, conventions, the pre-PR checklist, and good first issues. Quick version: get the app running with the Setup steps above, keep PRs focused, make sure `npx tsc --noEmit && npm run lint && npm run build` passes in `frontend/`, and never commit secrets.
+
 ## License
 
 [MIT](LICENSE)
