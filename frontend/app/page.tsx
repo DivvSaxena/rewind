@@ -1,4 +1,5 @@
 import Link from "next/link";
+import SiteFooter from "@/components/SiteFooter";
 
 const FEATURES = [
   {
@@ -31,6 +32,29 @@ const FEATURES = [
   },
 ];
 
+const FAQS = [
+  {
+    q: "What is Rewind?",
+    a: "Rewind is a memory debugger for AI agents built on Cognee. It renders the agent's knowledge graph, shows exactly which memories produced each answer, and lets you rewind memory to an earlier point in time.",
+  },
+  {
+    q: "What data is in the demo?",
+    a: "The first 45 issues and pull requests of the Cognee repository, ingested through Cognee itself in three chronological batches: 292 nodes and 859 relationships extracted by an LLM.",
+  },
+  {
+    q: "How does the retrieval X-ray work?",
+    a: "When you ask a question, Cognee returns the exact triplets it retrieved to answer it. Rewind extracts their node IDs and highlights precisely those nodes and edges in the graph, so the provenance is real, not approximated.",
+  },
+  {
+    q: "How does time travel work?",
+    a: "Each ingest batch is tagged as a native Cognee NodeSet, so batch membership lives in the graph itself. Dragging the timeline restricts retrieval to the batches that existed at that point, meaning answers come only from what the agent knew then.",
+  },
+  {
+    q: "Is it open source?",
+    a: "Yes. The full stack (FastAPI + Cognee backend, Next.js frontend) is MIT-licensed on GitHub.",
+  },
+];
+
 export default function Landing() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-zinc-950 text-zinc-100">
@@ -43,13 +67,13 @@ export default function Landing() {
         playsInline
         preload="auto"
         poster="/assets/rewind-bg-image.png"
-        className="pointer-events-none fixed inset-0 h-full w-full object-cover opacity-35"
+        className="pointer-events-none fixed inset-0 h-full w-full object-cover opacity-60"
       >
         <source src="/assets/rewind-bg-video.mp4" type="video/mp4" />
       </video>
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-0 bg-gradient-to-b from-zinc-950/60 via-zinc-950/70 to-zinc-950/90"
+        className="pointer-events-none fixed inset-0 bg-gradient-to-b from-zinc-950/25 via-zinc-950/35 to-zinc-950/60"
       />
 
       {/* Ambient glow */}
@@ -114,13 +138,32 @@ export default function Landing() {
               </div>
             ))}
           </div>
+
+          <section className="mt-24 w-full text-left">
+            <h2 className="text-center text-2xl font-semibold tracking-tight">
+              Frequently asked questions
+            </h2>
+            <div className="mx-auto mt-8 flex max-w-2xl flex-col gap-3">
+              {FAQS.map((faq) => (
+                <details
+                  key={faq.q}
+                  className="group rounded-lg border border-zinc-800/80 bg-zinc-900/40 transition-colors hover:border-zinc-700 open:border-zinc-700"
+                >
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-sm font-medium text-zinc-100 [&::-webkit-details-marker]:hidden">
+                    {faq.q}
+                    <span className="text-zinc-500 transition-transform group-open:rotate-45">
+                      +
+                    </span>
+                  </summary>
+                  <p className="px-5 pb-4 text-sm leading-relaxed text-zinc-400">{faq.a}</p>
+                </details>
+              ))}
+            </div>
+          </section>
         </main>
 
-        <footer className="flex items-center justify-between border-t border-zinc-900 py-6 text-xs text-zinc-600">
-          <span>Rewind — a memory debugger for Cognee agents</span>
-          <span>FastAPI + cognee · Next.js + react-force-graph</span>
-        </footer>
       </div>
+      <SiteFooter />
     </div>
   );
 }
