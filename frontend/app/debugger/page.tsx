@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { askQuestion, getBatches, getGraph } from "@/lib/api";
 import type { AskResponse, Batch, GraphNode, GraphSnapshot } from "@/lib/types";
 import Header from "@/components/Header";
@@ -29,6 +29,30 @@ export default function Home() {
 
   // Resizable sidebar: drag the divider to grow the panel, capped at 45vw.
   const [sidebarWidth, setSidebarWidth] = useState(448);
+
+  // Vertical split inside the sidebar: ask panel height as % (rest = inspector).
+  const [askHeightPct, setAskHeightPct] = useState(50);
+  const asideRef = useRef<HTMLElement | null>(null);
+  const startVResize = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    const onMove = (ev: MouseEvent) => {
+      const el = asideRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const pct = ((ev.clientY - rect.top) / rect.height) * 100;
+      setAskHeightPct(Math.min(80, Math.max(20, pct)));
+    };
+    const onUp = () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    document.body.style.cursor = "row-resize";
+    document.body.style.userSelect = "none";
+  }, []);
   const startResize = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     const onMove = (ev: MouseEvent) => {
@@ -234,13 +258,19 @@ export default function Home() {
           className="w-1.5 shrink-0 cursor-col-resize bg-zinc-800/60 transition-colors hover:bg-sky-500/70 active:bg-sky-500"
         />
         <aside
+          ref={asideRef}
           style={{ width: sidebarWidth }}
           className="flex shrink-0 flex-col border-l border-zinc-800 bg-zinc-950"
         >
-          <div className="h-1/2 min-h-0 overflow-hidden border-b border-zinc-800">
+          <div style={{ height: `${askHeightPct}%` }} className="min-h-0 overflow-hidden">
             <AskPanel onAsk={handleAsk} asking={asking} error={askError} result={askResult} />
           </div>
-          <div className="h-1/2 min-h-0 overflow-hidden">
+          <div
+            onMouseDown={startVResize}
+            title="Drag to resize the panels"
+            className="h-1.5 shrink-0 cursor-row-resize bg-zinc-800/60 transition-colors hover:bg-sky-500/70 active:bg-sky-500"
+          />
+          <div className="min-h-0 flex-1 overflow-hidden">
             <NodeInspector
               node={selectedNode}
               connectedNodes={connectedNodes}
