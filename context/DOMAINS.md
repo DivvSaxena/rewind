@@ -3,7 +3,7 @@
 Every frontend domain must be in the backend's CORS allowlist, or the browser
 blocks all API calls and the debugger shows **"Failed to fetch" / disconnected**
 even though the backend is healthy. This has bitten us twice
-(`rewind-pink.vercel.app`, then `tryrewind.vercel.app`) — follow this checklist
+(`rewind-pink.vercel.app`, then `tryrewind.vercel.app`) - follow this checklist
 whenever a domain is added or changed.
 
 ## Checklist
@@ -19,7 +19,7 @@ whenever a domain is added or changed.
    ```
 
    Rules for each entry:
-   - Exact match only — no wildcards.
+   - Exact match only - no wildcards.
    - Include the `https://` scheme.
    - No trailing slash.
    - Comma-separated, no spaces (the backend does a plain `.split(",")`
@@ -50,7 +50,7 @@ whenever a domain is added or changed.
 The frontend bakes the API URL at build time (`NEXT_PUBLIC_API_URL`). A new
 backend URL requires updating that env var in Vercel (or the
 `--build-arg` for the Fly frontend) and **rebuilding/redeploying the
-frontend** — a runtime env change is not enough.
+frontend** - a runtime env change is not enough.
 
 ## Symptom → cause quick reference
 
@@ -59,4 +59,4 @@ frontend** — a runtime env change is not enough.
 | "Failed to fetch", backend healthy | New domain missing from `CORS_ORIGINS` |
 | Preflight 400 "Disallowed CORS origin" | Origin typo: scheme, trailing slash, or www mismatch |
 | Works on old domain, fails on new | Allowlist updated but backend not redeployed |
-| Fails everywhere | Backend actually down — check `fly status -a rewind-backend` |
+| Fails everywhere | Backend actually down - check `fly status -a rewind-backend` |

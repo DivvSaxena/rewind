@@ -25,12 +25,12 @@ os.environ.setdefault("CACHING", "false")
 # (server, scripts) reads the same graph store and data survives restarts.
 # With the 1.2.2 default (multi-user access control on), add/cognify/search write to
 # per-dataset DBs resolved via ContextVars, while a bare get_graph_engine() opens the
-# empty global DB — /graph in a fresh process sees 0 nodes.
+# empty global DB - /graph in a fresh process sees 0 nodes.
 os.environ.setdefault("ENABLE_BACKEND_ACCESS_CONTROL", "false")
 
 # Self-throttle LLM calls under Groq's free-tier per-minute token cap (6K TPM for
 # 8b-instant) so cognify paces itself instead of erroring mid-batch. Harmless but
-# slower on paid tiers — raise/remove these if you upgrade.
+# slower on paid tiers - raise/remove these if you upgrade.
 os.environ.setdefault("LLM_RATE_LIMIT_ENABLED", "true")
 os.environ.setdefault("LLM_RATE_LIMIT_REQUESTS", "4")
 os.environ.setdefault("LLM_RATE_LIMIT_INTERVAL", "60")

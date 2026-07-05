@@ -2,14 +2,19 @@
 
 **See what your agent knows, watch it learn, and rewind its memory in time.**
 
+**Live demo: [tryrewind.vercel.app](https://tryrewind.vercel.app)**
+
 Rewind ingests real data into a [Cognee](https://github.com/topoteretes/cognee) knowledge graph and gives you DevTools for it:
 
 - **Graph view.** The full memory graph, force-directed and colored by node type.
 - **X-ray provenance.** Ask a question and the exact nodes and edges the answer came from light up, while everything else dims. No hand-waving: the highlight comes from Cognee's own retrieved objects.
 - **Time travel.** Data is ingested in chronological batches, each tagged as a native Cognee `NodeSet`. A timeline slider rewinds the graph to any batch. Later knowledge fades out, and questions are answered *only from memory as of that point*.
 - **Node inspector.** Click any node to see its type, batch, properties, source document, and connections.
+- **Wisdom tips.** Every answer is detailed (citing the PRs and issues involved) and ends with a practical takeaway, rendered as its own callout.
+- **Guided onboarding.** First visit walks you through what Rewind is, asks a few questions about you, and hands you a personalized playbook. Replay it anytime from the header.
+- **Demo-friendly.** One-click sample questions, on-screen control hints, and a resizable answer panel.
 
-Built in 2 days for the Cognee hackathon.
+Built in 2 days for the Cognee hackathon, then polished.
 
 ## How it works
 

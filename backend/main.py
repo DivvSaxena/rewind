@@ -1,4 +1,4 @@
-"""Rewind backend — FastAPI over cognee 1.2.2."""
+"""Rewind backend - FastAPI over cognee 1.2.2."""
 
 import os
 from typing import Optional
