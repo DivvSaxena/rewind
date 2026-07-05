@@ -13,8 +13,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Rewind — DevTools for AI memory",
+  title: "Rewind - DevTools for AI memory",
   description: "Memory debugger for Cognee-backed AI agents.",
+  icons: {
+    icon: [
+      { url: "/assets/rewind-favicon/favicon.ico" },
+      { url: "/assets/rewind-favicon/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/assets/rewind-favicon/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: "/assets/rewind-favicon/apple-touch-icon.png",
+  },
+  manifest: "/assets/rewind-favicon/site.webmanifest",
 };
 
 export default function RootLayout({

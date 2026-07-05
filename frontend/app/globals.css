@@ -17,3 +17,45 @@ body {
   color: var(--foreground);
   font-family: var(--font-jakarta-sans), Arial, Helvetica, sans-serif;
 }
+
+/* Scroll-driven reveal for landing cards (no-op in browsers without support) */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  .card-reveal {
+    animation: fade-up both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 50%;
+  }
+}
+
+/* Scroll-down mouse indicator */
+@keyframes scroll-dot {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  25% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+.scroll-dot {
+  animation: scroll-dot 1.6s ease-in-out infinite;
+}

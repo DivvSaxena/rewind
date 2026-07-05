@@ -24,7 +24,7 @@ export default function Terms() {
             Please do not abuse the public endpoints. We may rate-limit or block traffic
             that disrupts the service.
           </p>
-          <p>Contact: saxenadivv@gmail.com</p>
+          <p>Contact: hello@divvsaxena.com</p>
         </div>
       </div>
     </div>

@@ -23,7 +23,7 @@ export default function Privacy() {
             Standard hosting logs (such as IP addresses) may be kept briefly by our hosting
             providers, Vercel and Fly.io, for security and operations.
           </p>
-          <p>Contact: saxenadivv@gmail.com</p>
+          <p>Contact: hello@divvsaxena.com</p>
         </div>
       </div>
     </div>

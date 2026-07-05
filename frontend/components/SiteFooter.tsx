@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 const PRODUCT_LINKS = [
@@ -21,7 +22,7 @@ const MAKER_LINKS = [
 
 function ColumnHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="text-[11px] font-semibold uppercase tracking-widest text-[#666]">
+    <h3 className="text-[11px] font-semibold uppercase tracking-widest text-stone-400">
       {children}
     </h3>
   );
@@ -36,7 +37,7 @@ function FooterLink({
   href: string;
   external?: boolean;
 }) {
-  const className = "text-xs text-[#666] transition-colors hover:text-[#e8e8e8]";
+  const className = "text-xs text-stone-500 transition-colors hover:text-zinc-900";
   return (
     <li>
       {external ? (
@@ -54,7 +55,7 @@ function FooterLink({
 
 export default function SiteFooter() {
   return (
-    <footer className="relative w-full border-t border-zinc-800/80 bg-zinc-950/70">
+    <footer className="w-full border-t border-stone-200 bg-[#f4efe7]">
       <div
         style={{
           maxWidth: 1200,
@@ -66,11 +67,20 @@ export default function SiteFooter() {
         }}
       >
         <div>
-          <p className="text-sm font-semibold tracking-tight text-[#e8e8e8]">Rewind</p>
-          <p className="mt-3 text-xs leading-relaxed text-[#666]">
+          <p className="flex items-center gap-2 text-sm font-semibold tracking-tight text-zinc-900">
+            <Image
+              src="/assets/rewind-favicon/android-chrome-192x192.png"
+              alt="Rewind logo"
+              width={24}
+              height={24}
+              className="rounded-md"
+            />
+            Rewind
+          </p>
+          <p className="mt-3 text-xs leading-relaxed text-stone-500">
             A memory debugger for Cognee-backed AI agents.
           </p>
-          <p className="mt-4 text-xs text-[#666]">
+          <p className="mt-4 text-xs text-stone-500">
             Copyright © {new Date().getFullYear()} Rewind. All rights reserved.
           </p>
         </div>

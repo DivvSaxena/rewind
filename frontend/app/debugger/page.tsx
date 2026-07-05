@@ -142,7 +142,7 @@ export default function Home() {
                 <code className="rounded bg-zinc-900 px-1.5 py-0.5 text-[11px] text-zinc-400">
                   POST /ingest {"{"}repo, batch_label{"}"}
                 </code>{" "}
-                — then refresh. Cognify takes a few minutes per batch.
+                then refresh. Cognify takes a few minutes per batch.
               </p>
               <button
                 onClick={retryLoadGraph}

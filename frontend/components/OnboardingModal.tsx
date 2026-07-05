@@ -7,7 +7,7 @@ const STORAGE_KEY = "rewind-onboarding-seen";
 const STEPS = [
   {
     title: "Explore the memory graph",
-    body: "Every dot is something the agent remembers — entities and concepts extracted by Cognee. Drag to pan, scroll to zoom, click any node to inspect its type, batch, and source.",
+    body: "Every dot is something the agent remembers: entities and concepts extracted by Cognee. Drag to pan, scroll to zoom, click any node to inspect its type, batch, and source.",
   },
   {
     title: "Ask a question, see the X-ray",
