@@ -26,7 +26,7 @@ export default function NodeInspector({ node, connectedNodes, onSelectNode, onCl
   const url = sourceUrl(node.properties);
 
   return (
-    <div className="flex h-full flex-col gap-4 overflow-y-auto p-4">
+    <div key={node.id} className="panel-in flex h-full flex-col gap-4 overflow-y-auto p-4">
       <div className="flex items-start justify-between">
         <div>
           <div className="text-[10px] font-medium uppercase tracking-wide text-zinc-500">

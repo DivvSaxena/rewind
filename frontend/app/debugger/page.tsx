@@ -24,6 +24,7 @@ export default function Home() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
   const [batches, setBatches] = useState<Batch[]>([]);
+  const [introSignal, setIntroSignal] = useState(0);
   // null = full memory; otherwise label of the last batch included in the view.
   const [batchCutoff, setBatchCutoff] = useState<string | null>(null);
 
@@ -123,7 +124,12 @@ export default function Home() {
 
   return (
     <div className="flex h-screen flex-col bg-zinc-950">
-      <Header status={status} nodeCount={graph.nodes.length} linkCount={graph.links.length} />
+      <Header
+        status={status}
+        nodeCount={graph.nodes.length}
+        linkCount={graph.links.length}
+        onReplayIntro={() => setIntroSignal((s) => s + 1)}
+      />
       <div className="flex flex-1 overflow-hidden">
         <main className="relative min-w-0 flex-1">
           {status === "connecting" && graph.nodes.length === 0 && (
@@ -190,7 +196,7 @@ export default function Home() {
               </span>
             </div>
           )}
-          <OnboardingModal />
+          <OnboardingModal openSignal={introSignal} />
           {batches.length > 0 && (
             <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center p-4">
               <div className="w-full max-w-xl">
@@ -199,7 +205,7 @@ export default function Home() {
             </div>
           )}
         </main>
-        <aside className="flex w-96 shrink-0 flex-col border-l border-zinc-800 bg-zinc-950">
+        <aside className="flex w-[28rem] shrink-0 flex-col border-l border-zinc-800 bg-zinc-950 2xl:w-[32rem]">
           <div className="h-1/2 min-h-0 overflow-hidden border-b border-zinc-800">
             <AskPanel onAsk={handleAsk} asking={asking} error={askError} result={askResult} />
           </div>

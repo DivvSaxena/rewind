@@ -88,7 +88,12 @@ const CONTROLS = [
 
 const emptySubscribe = () => () => {};
 
-export default function OnboardingModal() {
+interface OnboardingProps {
+  /** Increment to reopen the intro from outside (e.g. a header button). */
+  openSignal?: number;
+}
+
+export default function OnboardingModal({ openSignal = 0 }: OnboardingProps) {
   const done = useSyncExternalStore(
     emptySubscribe,
     () => localStorage.getItem(DONE_KEY) !== null,
@@ -100,6 +105,16 @@ export default function OnboardingModal() {
   // 0..4 = questions, 5 = personalized results
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+
+  // Reopen when the external signal changes (render-time state adjustment,
+  // the React-approved alternative to setState-in-effect).
+  const [seenSignal, setSeenSignal] = useState(openSignal);
+  if (openSignal !== seenSignal) {
+    setSeenSignal(openSignal);
+    setStep(0);
+    setAnswers({});
+    setOverride("open");
+  }
 
   const finish = () => {
     localStorage.setItem(DONE_KEY, "done");

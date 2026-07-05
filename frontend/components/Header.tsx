@@ -6,6 +6,7 @@ interface Props {
   status: Status;
   nodeCount: number;
   linkCount: number;
+  onReplayIntro?: () => void;
 }
 
 const STATUS_STYLES: Record<Status, { color: string; label: string }> = {
@@ -14,7 +15,7 @@ const STATUS_STYLES: Record<Status, { color: string; label: string }> = {
   error: { color: "bg-red-500", label: "disconnected" },
 };
 
-export default function Header({ status, nodeCount, linkCount }: Props) {
+export default function Header({ status, nodeCount, linkCount, onReplayIntro }: Props) {
   const { color, label } = STATUS_STYLES[status];
 
   return (
@@ -25,6 +26,14 @@ export default function Header({ status, nodeCount, linkCount }: Props) {
         </h1>
       </div>
       <div className="flex items-center gap-4 text-xs text-zinc-500">
+        {onReplayIntro && (
+          <button
+            onClick={onReplayIntro}
+            className="rounded-md border border-zinc-700 px-2.5 py-1 text-[11px] text-zinc-300 transition-colors hover:border-zinc-500 hover:text-zinc-100"
+          >
+            ↺ Replay demo
+          </button>
+        )}
         <span>
           {nodeCount} nodes / {linkCount} edges
         </span>
