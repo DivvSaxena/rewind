@@ -8,6 +8,7 @@ import GraphView from "@/components/GraphView";
 import AskPanel from "@/components/AskPanel";
 import NodeInspector from "@/components/NodeInspector";
 import Timeline from "@/components/Timeline";
+import OnboardingModal from "@/components/OnboardingModal";
 
 const EMPTY_GRAPH: GraphSnapshot = { nodes: [], links: [] };
 
@@ -126,8 +127,11 @@ export default function Home() {
       <div className="flex flex-1 overflow-hidden">
         <main className="relative min-w-0 flex-1">
           {status === "connecting" && graph.nodes.length === 0 && (
-            <div className="absolute inset-0 flex items-center justify-center">
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-8 text-center">
               <p className="animate-pulse text-sm text-zinc-500">Loading memory graph...</p>
+              <p className="max-w-sm text-xs leading-relaxed text-zinc-600">
+                If the backend was idle, waking it up can take ~30 seconds. Hang tight.
+              </p>
             </div>
           )}
           {status === "connected" && graph.nodes.length === 0 && (
@@ -170,6 +174,7 @@ export default function Home() {
               onSelectNode={handleSelectNode}
             />
           )}
+          <OnboardingModal />
           {batches.length > 0 && (
             <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center p-4">
               <div className="w-full max-w-xl">
